@@ -113,6 +113,9 @@ quitadisyuncion (Or f1 f2) = [f1, f2]
 
 --Ejercicio 2
 resolucion :: Clausula -> Clausula -> Clausula
+resolucion [] [] = []
+resolucion [] c = c
+resolucion c [] = c
 resolucion [f1] [(Not f2)] = if f1 == f2 then [] else [f1, f2]
 -- resolucion [f1] [f2] = [f1, f2]
 resolucion [f1] xs = hayContraria f1 xs
@@ -148,18 +151,18 @@ longitud (_:xs) = 1 + longitud xs
 
 ------------------------------------------------------
 
---Función auxiliar para Ejercicio 1
+--Función auxiliar para Ejercicio 2
 construyeSinRepeticion :: (Eq a) => a -> [a] -> [a]
 construyeSinRepeticion a [] = [a]
 construyeSinRepeticion a [b] = if a == b then [a] else [a,b]
 construyeSinRepeticion a (x:xs) = if elementoDe a (x:xs) == True then construyeSinRepeticion x xs else a:x:xs
 
---Función auxiliar para Ejercicio 1
-construyeListaSinRepeticion :: (Literal -> [Literal] -> [Literal]) -> Literal -> [Literal] -> [Literal]
+--Función auxiliar para Ejercicio 2
+construyeListaSinRepeticion :: (a -> [a] -> [a]) -> a -> [a] -> [a]
 construyeListaSinRepeticion f a [] = f a []
 construyeListaSinRepeticion f a (x:xs) = f a (construyeListaSinRepeticion f x xs)
 
---Función auxiliar para Ejercicio 1
+--Función auxiliar para Ejercicio 2
 regresaVariables :: Prop -> [String]
 regresaVariables (Cons _) = []
 regresaVariables (Var a) = [a]
@@ -169,7 +172,7 @@ regresaVariables (And a b) = regresaVariables a ++ regresaVariables b
 regresaVariables (Impl a b) = regresaVariables a ++ regresaVariables b
 regresaVariables (Syss a b) = regresaVariables a ++ regresaVariables b
 
---Función auxiliar para Ejercicio 1
+--Función auxiliar para Ejercicio 2
 regresaCabeza :: [a] -> a
 regresaCabeza [] = error "No se puede obtener la cabeza de una lista vacía."
 regresaCabeza (x:_) = x
@@ -185,17 +188,50 @@ elementoDe y (x:xs) = if y == x then True else elementoDe y xs
 
 
 
-
-
 {-
 ALGORITMO DE SATURACION
 -}
 
 --Ejercicio 1
 hayResolvente :: Clausula -> Clausula -> Bool
-hayResolvente = undefined
+hayResolvente [] _ = False
+hayResolvente _ [] = False
+hayResolvente (x:xs) (y:ys) = if sonContrarias x y then True else (hayResolvente (x:xs) ys) || (hayResolvente xs (y:ys))
+
 
 --Ejercicio 2
 --Funcion principal que pasa la formula proposicional a fnc e invoca a res con las clausulas de la formula.
 saturacion :: Prop -> Bool
-saturacion = undefined
+saturacion f1 = resolvente (clausulas (fnc f1))
+-- saturacion f1
+--   | hayClausulaVacia (funcionR (clausulas (fnc f1))) = False
+--   | funcionR (clausulas (fnc f1)) == clausulas (fnc f1) = True
+--   | otherwise = saturacion (funcionR (funcionR (clausulas (fnc f1))))
+
+--Devuelve todos las resoluciones de la lista de clausulas recibida concatenada con la lista original
+funcionR :: [Clausula] -> [Clausula]
+funcionR [] = []
+funcionR [c1] = [c1]
+funcionR [c1, c2] = if hayResolvente c1 c2 then [c1,c2] ++ [resolucion c1 c2] else [c1,c2]
+-- funcionR (x:y:xs) = if hayResolvente x y then [x] ++ [resolucion x y] ++ funcionR (y:xs) else funcionR [x] ++ (y:xs)
+-- funcionR xs = xs ++ [resolucion x y | x <- xs, y <- xs, x /= y, hayResolvente x y]
+-- funcionR (x:xs) = (x:xs) ++ (construyeListaSinRepeticion construyeSinRepeticion x [resolucion x y | x <- (x:xs), y <- (x:xs), x /= y, hayResolvente x y])
+funcionR (x:xs) = construyeListaSinRepeticion construyeSinRepeticion x ((x:xs) ++ ([resolucion x y | x <- (x:xs), y <- (x:xs), x /= y, hayResolvente x y]))
+
+hayClausulaVacia :: [Clausula] -> Bool
+hayClausulaVacia [] = False
+hayClausulaVacia [a] = if a == [] then True else False 
+hayClausulaVacia (x:xs) = if x == [] then True else hayClausulaVacia xs
+
+resolvente :: [Clausula] -> Bool
+resolvente xs
+  | hayClausulaVacia (funcionR xs) = False
+  | funcionR xs == xs = True
+  | otherwise = resolvente (funcionR xs)
+-- [[Var "p", Var "q"],[Not (Var "r"), Var "s"],[Var "t", Not (Var "u")]]
+-- [[ Not (Var "p"), Var "p", Var "q" ], [ Not (Var "p"), Var "p", Var "q" ], [ Var "p", Var "q", Not (Var "p") ], [ Var "p", Var "q", Not (Var "q") ]]
+
+-- [[Var "p", Var "q"], [Not (Var "p"), Var "r"]]
+
+-- [[Var "p", Var "q"], [Not (Var "p"), Var "r"], [Not (Var "q"), Var "s"]]
+
