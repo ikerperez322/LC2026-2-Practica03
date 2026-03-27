@@ -24,12 +24,12 @@ En este caso particular es posible que también necesiten ejecutar `ghc-pkg list
 
 En esta sección deben eliminar esta línea de texto, borrar la leyenda "Integrante n" y escribir su nombre empezando por apellidos y su número de cuenta.
 
-+ Integrante 1
-    - No. de Cuenta: 
-+ Integrante 2
-    - No. de Cuenta: 
-+ Integrante 3
-    - No. de Cuenta: 
++ Martínez Méndez Ángel Antonio
+    - No. de Cuenta: 322143353
++ Pérez Pérez Iker Daniel
+    - No. de Cuenta: 322167450
++ Rendón Ávila Jesús Mateo
+    - No. de Cuenta: 309144979
 
 ## Comentarios
 
